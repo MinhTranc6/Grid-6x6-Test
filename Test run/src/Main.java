@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 public class Main {
     static int gridSize = 7; // Changeable grid size
     static int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
@@ -53,7 +55,8 @@ public class Main {
     }
 
     // DFS with backtracking
-    static void dfs(int m, int n, boolean[][] visited, int cellsVisited) {
+    // DFS with constraints from input string
+    static void dfs(int m, int n, boolean[][] visited, int cellsVisited, String input) {
         // Increment the search counter
         searchCounter++;
         if (searchCounter % 10000000 == 0) {
@@ -76,12 +79,20 @@ public class Main {
         // Mark the current cell as visited
         visited[m][n] = true;
 
+        // Get the allowed direction for this move
+        char allowedMove = input.charAt(cellsVisited - 1); // 0-based index
+
         // Explore all possible directions
         for (int[] dir : directions) {
             int newRow = m + dir[0];
             int newCol = n + dir[1];
-            if (isValid(newRow, newCol, visited)) {
-                dfs(newRow, newCol, visited, cellsVisited + 1);
+
+            // Determine the direction char for this move
+            char directionChar = getDirectionChar(dir);
+
+            // If the move is valid and allowed by the input string, proceed
+            if (isValid(newRow, newCol, visited) && (allowedMove == '*' || allowedMove == directionChar)) {
+                dfs(newRow, newCol, visited, cellsVisited + 1, input);
             }
         }
 
@@ -89,23 +100,65 @@ public class Main {
         visited[m][n] = false;
     }
 
-    public static void main(String[] args) {
+    // Utility method to map direction vector to its corresponding char
+    static char getDirectionChar(int[] dir) {
+        if (dir[0] == -1 && dir[1] == 0) return 'U';
+        if (dir[0] == 1 && dir[1] == 0) return 'D';
+        if (dir[0] == 0 && dir[1] == -1) return 'L';
+        if (dir[0] == 0 && dir[1] == 1) return 'R';
+        return '*'; // Should never reach here
+    }
+
+    // Updated userInterface method
+    private static void userInterface() {
         boolean[][] visited = new boolean[gridSize][gridSize];
+        Scanner userIP = new Scanner(System.in);
+        boolean runtime = true;
+        System.out.print("================================================ \n" +
+                         "Disclaimer: The time shown will be the time it took for the algorithm to run \n");
+        while (runtime) {
+            System.out.print("================================================ \n" +
+                             "Enter 48-character path constraints (U/D/L/R/*), or type 'exit' to quit: \n");
+            String pathInput = userIP.nextLine();
 
-        // Start timing
-        long startTime = System.currentTimeMillis();
+            // Exit condition
+            if (pathInput.equalsIgnoreCase("exit")) {
+                System.out.println("Exiting program. Goodbye!");
+                runtime = false; // Break out of the loop
+                continue;
+            }
 
-        // Start the DFS from the top-left corner
-        totalPaths = 0;
-        searchCounter = 0;
-        dfs(0, 0, visited, 1);
+            // Validate input length
+            if (pathInput.length() != gridSize * gridSize - 1) {
+                System.out.println("Invalid input. Must be 48 characters long.");
+                continue;
+            }
 
-        // End timing
-        long endTime = System.currentTimeMillis();
+            // Start timing
+            long startTime = System.currentTimeMillis();
 
-        // Print the result
-        System.out.println("Number of unique paths: " + totalPaths);
-        System.out.println("Total search steps: " + searchCounter);
-        System.out.println("Execution time (ms): " + (endTime - startTime));
+            // Reset variables for a new computation
+            totalPaths = 0;
+            searchCounter = 0;
+
+            // Run the pathfinding process
+            dfs(0, 0, visited, 1, pathInput);
+
+            // End timing
+            long endTime = System.currentTimeMillis();
+
+            // Display results
+            System.out.print("================================================ \n");
+            System.out.println("Input: " + pathInput);
+            System.out.println("Total search steps: " + searchCounter);
+            System.out.println("Number of unique paths: " + totalPaths);
+            System.out.println("Execution time (ms): " + (endTime - startTime));
+        }
+
+        userIP.close(); // Close the scanner resource
+    }
+
+    public static void main(String[] args) {
+        userInterface();
     }
 }

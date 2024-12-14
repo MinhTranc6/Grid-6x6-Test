@@ -1,6 +1,6 @@
 public class Dynamic {
 
-    private static final int GRID_SIZE = 8;
+    private static final int GRID_SIZE = 7;
     private static final int TOTAL_CELLS = GRID_SIZE * GRID_SIZE;
 
     // Memoization table: dp[x][y][visited] (reduced scale to fit bitmask range)
